@@ -1,0 +1,49 @@
+{
+  "name": "landom-sdk",
+  "version": "0.1.0",
+  "description": "LLM 기반 사용자 행동 분석을 위한 랜딩페이지 이벤트 수집 SDK",
+  "main": "dist/landom-sdk.cjs.js",
+  "module": "dist/landom-sdk.esm.js",
+  "browser": "dist/landom-sdk.umd.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/landom-sdk.esm.js",
+      "require": "./dist/landom-sdk.cjs.js",
+      "default": "./dist/landom-sdk.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest --passWithNoTests",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DontYouKnowFunnel/LandOm-SDK.git"
+  },
+  "keywords": [
+    "analytics",
+    "landing-page",
+    "user-behavior",
+    "sdk",
+    "event-tracking"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DontYouKnowFunnel/LandOm-SDK/issues"
+  },
+  "homepage": "https://github.com/DontYouKnowFunnel/LandOm-SDK#readme",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.60.0",
+    "rollup-plugin-esbuild": "^6.2.1",
+    "typescript": "^6.0.2"
+  }
+}

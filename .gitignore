@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tgz
+
+# 개발용 파일 (원격 제외)
+test.html
+mock-server.*
