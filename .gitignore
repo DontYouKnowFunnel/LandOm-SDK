@@ -5,3 +5,7 @@ dist/
 # 개발용 파일 (원격 제외)
 test.html
 mock-server.*
+CLAUDE.md
+TODOS.md
+.claude/
+docs/

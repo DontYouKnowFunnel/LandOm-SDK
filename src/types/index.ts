@@ -22,6 +22,7 @@ export interface VisibilityPayload {
 
 export interface ScrollPayload {
   yOffset: number;
+  percentage: number;
 }
 
 export interface ClickPayload {
