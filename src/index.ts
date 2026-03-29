@@ -1,3 +1,7 @@
+// ─── 코어 API ───
+export { init, capture, destroy } from './core/sdk';
+
+// ─── 타입 re-export ───
 export type {
   EventType,
   EventPayload,
