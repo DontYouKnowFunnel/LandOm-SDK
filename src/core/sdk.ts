@@ -3,6 +3,14 @@ import { DEFAULT_CONFIG } from '../types';
 import { createLogger } from '../utils/logger';
 import { createTransport } from '../transport/transport';
 import { createEventQueue } from './event-queue';
+import { setContext } from './context';
+import { createStartCollector } from '../events/start';
+import { createVisibilityCollector } from '../events/visibility';
+import { createScrollCollector } from '../events/scroll';
+import { createClickCollector } from '../events/click';
+import { createInputCollector } from '../events/input';
+import { createPingCollector } from '../events/ping';
+import { createExitCollector } from '../events/exit';
 import type { Logger } from '../utils/logger';
 import type { EventQueue } from './event-queue';
 
@@ -14,8 +22,6 @@ export interface Collector {
 
 /** SDK 싱글턴 상태 */
 let isInitialized = false;
-let config: SDKConfig;
-let logger: Logger;
 let queue: EventQueue;
 let collectors: Collector[] = [];
 
@@ -30,8 +36,8 @@ export function init(options: SDKOptions): void {
     return;
   }
 
-  config = { ...DEFAULT_CONFIG, ...options };
-  logger = createLogger(config.debug);
+  const config = { ...DEFAULT_CONFIG, ...options };
+  const logger = createLogger(config.debug);
 
   const transport = createTransport({
     endpoint: config.endpoint,
@@ -48,8 +54,23 @@ export function init(options: SDKOptions): void {
     logger,
   });
 
+  // 컨텍스트 설정 (이벤트 수집기들이 참조)
+  setContext(queue, config, logger);
+
   queue.start();
   isInitialized = true;
+
+  // 기본 이벤트 수집기 등록
+  registerCollectors([
+    createStartCollector(),
+    createVisibilityCollector(),
+    createScrollCollector(),
+    createClickCollector(),
+    createInputCollector(),
+    createPingCollector(),
+    createExitCollector(),
+  ]);
+
   logger.log('SDK 초기화 완료', config);
 }
 
@@ -82,20 +103,6 @@ export function capture(type: EventType, payload: EventPayload = {}): void {
   queue.push(event);
 }
 
-/** 이벤트 큐 반환 (내부 모듈용) */
-export function getQueue(): EventQueue {
-  return queue;
-}
-
-/** SDK 설정 반환 (내부 모듈용) */
-export function getConfig(): SDKConfig {
-  return config;
-}
-
-/** SDK 로거 반환 (내부 모듈용) */
-export function getLogger(): Logger {
-  return logger;
-}
 
 /**
  * SDK 종료
