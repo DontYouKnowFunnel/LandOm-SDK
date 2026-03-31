@@ -70,14 +70,24 @@ export function createEventQueue(config: EventQueueConfig) {
     }
   }
 
-  /** 큐에 쌓인 이벤트를 비동기 전송 (fetch) */
-  function flush(): void {
+  /** 큐에 쌓인 이벤트를 비동기 전송 (fetch), 실패 시 큐 앞에 복원 */
+  async function flush(): Promise<void> {
     if (queue.length === 0) return;
 
     const events = queue.splice(0);
     const payload = buildPayload(events);
     logger.log('flush:', events.length, '건');
-    transport.send(payload);
+
+    const ok = await transport.send(payload);
+    if (!ok) {
+      queue.unshift(...events);
+      // 복원 후 maxQueueSize 초과 시 오래된 이벤트 드롭
+      if (queue.length > maxQueueSize) {
+        const dropped = queue.length - maxQueueSize;
+        queue = queue.slice(dropped);
+        logger.warn(`복원 후 큐 초과로 ${dropped}건 드롭`);
+      }
+    }
   }
 
   /** 큐에 쌓인 이벤트를 동기 전송 (sendBeacon) — 이탈 시 사용 */
