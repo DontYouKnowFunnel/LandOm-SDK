@@ -82,6 +82,7 @@ export interface SDKConfig {
   flushInterval: number;
   flushQueueSize: number;
   maxQueueSize: number;
+  maxRetries: number;
   beforeSend?: (event: SDKEvent) => SDKEvent | null;
   debug: boolean;
 }
@@ -95,5 +96,6 @@ export const DEFAULT_CONFIG: Omit<SDKConfig, 'apiKey'> = {
   flushInterval: 3000,
   flushQueueSize: 20,
   maxQueueSize: 100,
+  maxRetries: 3,
   debug: false,
 };
