@@ -1,5 +1,4 @@
 const SESSION_KEY = 'landom_session';
-const USER_KEY = 'landom_user_id';
 const IDLE_TIMEOUT = 30 * 60 * 1000; // 30분 비활동 시 세션 만료
 const MAX_DURATION = 24 * 60 * 60 * 1000; // 24시간 최대 세션 지속
 
@@ -109,12 +108,3 @@ export function getSessionId(): string {
   return session.sessionId;
 }
 
-/** 익명 사용자 ID 반환 (탭 내에서 세션이 바뀌어도 유지) */
-export function getAnonymousUserId(): string {
-  const existing = readStorage<string>(USER_KEY);
-  if (existing) return existing;
-
-  const userId = generateUUIDv7();
-  writeStorage(USER_KEY, userId);
-  return userId;
-}
