@@ -42,6 +42,7 @@ export function init(options: SDKOptions): void {
   const transport = createTransport({
     endpoint: config.endpoint,
     apiKey: config.apiKey,
+    maxRetries: config.maxRetries,
     logger,
   });
 
