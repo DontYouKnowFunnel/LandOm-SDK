@@ -1,7 +1,7 @@
 import type { SDKEvent, TransportPayload } from '../types';
 import type { Transport } from '../transport/transport';
 import type { Logger } from '../utils/logger';
-import { getSessionId, getAnonymousUserId } from '../utils/session';
+import { getSessionId } from '../utils/session';
 
 /** EventQueue 생성에 필요한 설정 */
 export interface EventQueueConfig {
@@ -39,7 +39,6 @@ export function createEventQueue(config: EventQueueConfig) {
   function buildPayload(events: SDKEvent[]): TransportPayload {
     return {
       sessionId: getSessionId(),
-      userId: getAnonymousUserId(),
       userAgent: navigator.userAgent,
       url: location.href,
       events,

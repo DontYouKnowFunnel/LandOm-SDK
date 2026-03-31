@@ -68,7 +68,6 @@ export interface SDKEvent {
 
 export interface TransportPayload {
   sessionId: string;
-  userId: string;
   userAgent: string;
   url: string;
   events: SDKEvent[];
