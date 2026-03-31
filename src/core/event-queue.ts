@@ -74,6 +74,12 @@ export function createEventQueue(config: EventQueueConfig) {
   async function flush(): Promise<void> {
     if (queue.length === 0) return;
 
+    // 오프라인이면 전송 건너뛰기 (큐에 계속 쌓아둠)
+    if (!navigator.onLine) {
+      logger.log('오프라인 상태, 전송 보류:', queue.length, '건');
+      return;
+    }
+
     const events = queue.splice(0);
     const payload = buildPayload(events);
     logger.log('flush:', events.length, '건');
@@ -100,19 +106,27 @@ export function createEventQueue(config: EventQueueConfig) {
     transport.sendSync(payload);
   }
 
-  /** 주기적 flush 타이머 시작 */
+  /** 온라인 복귀 시 즉시 flush */
+  function onOnline(): void {
+    logger.log('온라인 복귀, 보류 이벤트 전송');
+    flush();
+  }
+
+  /** 주기적 flush 타이머 시작 + 온라인 복귀 리스너 등록 */
   function start(): void {
     if (timerId !== null) return;
     timerId = setInterval(flush, flushInterval);
+    window.addEventListener('online', onOnline);
     logger.log(`큐 시작 (${flushInterval}ms 간격)`);
   }
 
-  /** 타이머 중지 + 잔여 이벤트 flush */
+  /** 타이머 중지 + 리스너 해제 + 잔여 이벤트 flush */
   function stop(): void {
     if (timerId !== null) {
       clearInterval(timerId);
       timerId = null;
     }
+    window.removeEventListener('online', onOnline);
     flush();
   }
 
