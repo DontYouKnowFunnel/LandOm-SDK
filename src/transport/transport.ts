@@ -30,7 +30,17 @@ export function createTransport(config: TransportConfig) {
    * 실패 시 exponential backoff로 최대 maxRetries회 재시도
    * @returns 전송 성공 여부
    */
+  /** keepalive 최대 허용 크기 (64KB, 여유분 확보) */
+  const KEEPALIVE_LIMIT = 60_000;
+
   async function send(payload: TransportPayload): Promise<boolean> {
+    const body = JSON.stringify(payload);
+    const useKeepalive = body.length <= KEEPALIVE_LIMIT;
+
+    if (!useKeepalive) {
+      logger.warn('페이로드 크기 초과, keepalive 비활성화:', body.length, 'bytes');
+    }
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const controller = new AbortController();
@@ -42,8 +52,8 @@ export function createTransport(config: TransportConfig) {
             'Content-Type': 'application/json',
             'X-Project-Key': apiKey,
           },
-          body: JSON.stringify(payload),
-          keepalive: true,
+          body,
+          keepalive: useKeepalive,
           signal: controller.signal,
         });
 
