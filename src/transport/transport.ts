@@ -33,6 +33,9 @@ export function createTransport(config: TransportConfig) {
   async function send(payload: TransportPayload): Promise<boolean> {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: {
@@ -41,7 +44,10 @@ export function createTransport(config: TransportConfig) {
           },
           body: JSON.stringify(payload),
           keepalive: true,
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (res.ok) {
           logger.log('전송 완료:', payload.events.length, '건');
