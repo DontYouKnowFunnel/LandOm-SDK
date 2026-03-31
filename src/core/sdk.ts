@@ -22,6 +22,7 @@ export interface Collector {
 
 /** SDK 싱글턴 상태 */
 let isInitialized = false;
+let logger: Logger;
 let queue: EventQueue;
 let collectors: Collector[] = [];
 
@@ -37,11 +38,12 @@ export function init(options: SDKOptions): void {
   }
 
   const config = { ...DEFAULT_CONFIG, ...options };
-  const logger = createLogger(config.debug);
+  logger = createLogger(config.debug);
 
   const transport = createTransport({
     endpoint: config.endpoint,
     apiKey: config.apiKey,
+    maxRetries: config.maxRetries,
     logger,
   });
 

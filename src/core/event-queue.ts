@@ -70,14 +70,30 @@ export function createEventQueue(config: EventQueueConfig) {
     }
   }
 
-  /** 큐에 쌓인 이벤트를 비동기 전송 (fetch) */
-  function flush(): void {
+  /** 큐에 쌓인 이벤트를 비동기 전송 (fetch), 실패 시 큐 앞에 복원 */
+  async function flush(): Promise<void> {
     if (queue.length === 0) return;
+
+    // 오프라인이면 전송 건너뛰기 (큐에 계속 쌓아둠)
+    if (!navigator.onLine) {
+      logger.log('오프라인 상태, 전송 보류:', queue.length, '건');
+      return;
+    }
 
     const events = queue.splice(0);
     const payload = buildPayload(events);
     logger.log('flush:', events.length, '건');
-    transport.send(payload);
+
+    const ok = await transport.send(payload);
+    if (!ok) {
+      queue.unshift(...events);
+      // 복원 후 maxQueueSize 초과 시 오래된 이벤트 드롭
+      if (queue.length > maxQueueSize) {
+        const dropped = queue.length - maxQueueSize;
+        queue = queue.slice(dropped);
+        logger.warn(`복원 후 큐 초과로 ${dropped}건 드롭`);
+      }
+    }
   }
 
   /** 큐에 쌓인 이벤트를 동기 전송 (sendBeacon) — 이탈 시 사용 */
@@ -90,19 +106,27 @@ export function createEventQueue(config: EventQueueConfig) {
     transport.sendSync(payload);
   }
 
-  /** 주기적 flush 타이머 시작 */
+  /** 온라인 복귀 시 즉시 flush */
+  function onOnline(): void {
+    logger.log('온라인 복귀, 보류 이벤트 전송');
+    flush();
+  }
+
+  /** 주기적 flush 타이머 시작 + 온라인 복귀 리스너 등록 */
   function start(): void {
     if (timerId !== null) return;
     timerId = setInterval(flush, flushInterval);
+    window.addEventListener('online', onOnline);
     logger.log(`큐 시작 (${flushInterval}ms 간격)`);
   }
 
-  /** 타이머 중지 + 잔여 이벤트 flush */
+  /** 타이머 중지 + 리스너 해제 + 잔여 이벤트 flush */
   function stop(): void {
     if (timerId !== null) {
       clearInterval(timerId);
       timerId = null;
     }
+    window.removeEventListener('online', onOnline);
     flush();
   }
 
