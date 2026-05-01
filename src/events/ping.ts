@@ -1,17 +1,18 @@
 import type { Collector } from '../core/sdk';
 import { getQueue } from '../core/context';
+import { buildCssSelector } from '../utils/selector';
 
 const PING_INTERVAL = 5000; // 5초마다 현재 섹션 보고
 
 /**
  * 체류 섹션(ping) 이벤트 수집기
  * IntersectionObserver로 현재 뷰포트에 보이는 섹션을 감지하고
- * 5초 간격으로 현재 체류 섹션을 보 고
+ * 5초 간격으로 현재 체류 섹션을 보고
  */
 export function createPingCollector(): Collector {
   let observer: IntersectionObserver | null = null;
   let timerId: ReturnType<typeof setInterval> | null = null;
-  let currentSectionId: string | null = null;
+  let currentSection: Element | null = null;
 
   return {
     setup() {
@@ -20,7 +21,7 @@ export function createPingCollector(): Collector {
         (entries) => {
           for (const entry of entries) {
             if (entry.isIntersecting && entry.target.id) {
-              currentSectionId = entry.target.id;
+              currentSection = entry.target;
             }
           }
         },
@@ -33,12 +34,13 @@ export function createPingCollector(): Collector {
 
       // 5초마다 현재 섹션 보고
       timerId = setInterval(() => {
-        if (!currentSectionId) return;
+        if (!currentSection) return;
 
         getQueue().push({
           type: 'ping',
           timestamp: Date.now(),
-          payload: { sectionId: currentSectionId },
+          cssSelector: buildCssSelector(currentSection),
+          payload: { sectionId: currentSection.id },
         });
       }, PING_INTERVAL);
     },
@@ -52,7 +54,7 @@ export function createPingCollector(): Collector {
         clearInterval(timerId);
         timerId = null;
       }
-      currentSectionId = null;
+      currentSection = null;
     },
   };
 }

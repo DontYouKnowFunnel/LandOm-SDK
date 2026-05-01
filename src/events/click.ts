@@ -1,6 +1,7 @@
 import type { Collector } from '../core/sdk';
 import { getQueue } from '../core/context';
 import { getElementId } from '../utils/dom';
+import { buildCssSelector } from '../utils/selector';
 import { touchSession } from '../utils/session';
 
 /**
@@ -17,6 +18,7 @@ export function createClickCollector(): Collector {
     getQueue().push({
       type: 'click',
       timestamp: Date.now(),
+      cssSelector: buildCssSelector(target),
       payload: { targetId: getElementId(target) },
     });
   }
