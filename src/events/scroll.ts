@@ -21,6 +21,7 @@ export function createScrollCollector(): Collector {
     getQueue().push({
       type: 'scroll',
       timestamp: Date.now(),
+      cssSelector: null,
       payload: { yOffset, percentage },
     });
   }, THROTTLE_MS);

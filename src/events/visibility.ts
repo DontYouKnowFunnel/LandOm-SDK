@@ -18,6 +18,7 @@ export function createVisibilityCollector(): Collector {
     getQueue().push({
       type: 'visibility',
       timestamp: Date.now(),
+      cssSelector: null,
       payload: { isVisible },
     });
   }

@@ -40,7 +40,7 @@ export function createExitCollector(): Collector {
     queue.push({
       type: 'exit',
       timestamp: Date.now(),
-      ...(lastEl && { cssSelector: buildCssSelector(lastEl) }),
+      cssSelector: lastEl ? buildCssSelector(lastEl) : null,
       payload: { lastElementId, maxDepth },
     });
 
