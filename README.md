@@ -62,15 +62,17 @@ LandOm.init({
 
 SDK가 `init()` 후 자동으로 수집하는 이벤트:
 
-| 이벤트 | 설명 | Payload |
-|--------|------|---------|
-| `start` | 페이지 진입 | - |
-| `visibility` | 탭 전환/최소화 | `isVisible` |
-| `scroll` | 스크롤 (500ms 쓰로틀) | `yOffset`, `percentage` |
-| `click` | element 클릭 | `targetId` |
-| `input` | 입력 필드 포커스 (값 미수집) | `fieldId` |
-| `ping` | 현재 보고 있는 섹션 (5초 간격) | `sectionId` |
-| `exit` | 페이지 이탈 | `lastElementId`, `maxDepth` |
+모든 이벤트는 공통 필드 `cssSelector: string | null`을 포함합니다 (연결된 요소가 없는 이벤트는 `null`).
+
+| 이벤트 | 설명 | Payload | cssSelector |
+|--------|------|---------|-------------|
+| `start` | 페이지 진입 | - | `null` |
+| `visibility` | 탭 전환/최소화 | `isVisible` | `null` |
+| `scroll` | 스크롤 (500ms 쓰로틀) | `yOffset`, `percentage` | `null` |
+| `click` | element 클릭 | `targetId` | 클릭된 요소 |
+| `input` | 입력 필드 포커스 (값 미수집) | `fieldId` | 입력 필드 |
+| `ping` | 현재 보고 있는 섹션 (5초 간격) | `sectionId` | 현재 섹션 |
+| `exit` | 페이지 이탈 | `lastElementId`, `maxDepth` | 마지막 요소 (없으면 `null`) |
 
 ## 서버로 전송되는 데이터
 
@@ -86,8 +88,8 @@ Header: X-Project-Key: <apiKey>
   "userAgent": "Mozilla/5.0 ...",
   "url": "https://example.com",
   "events": [
-    { "type": "click", "timestamp": 1711612800000, "payload": { "targetId": "#signup-btn" } },
-    { "type": "scroll", "timestamp": 1711612802000, "payload": { "yOffset": 500, "percentage": 25 } }
+    { "type": "click", "timestamp": 1711612800000, "cssSelector": "section[id=\"hero\"] > button:nth-of-type(1)", "payload": { "targetId": "#signup-btn" } },
+    { "type": "scroll", "timestamp": 1711612802000, "cssSelector": null, "payload": { "yOffset": 500, "percentage": 25 } }
   ]
 }
 ```
@@ -105,7 +107,8 @@ src/
 │   ├── logger.ts           # 조건부 디버그 로거(개발용)
 │   ├── session.ts          # UUIDv7 생성, 세션 ID 관리
 │   ├── throttle.ts         # trailing-edge 쓰로틀
-│   └── dom.ts              # DOM 요소 식별자 추출
+│   ├── dom.ts              # DOM 요소 식별자 추출
+│   └── selector.ts         # CSS selector 생성 (id 우선 → :nth-of-type)
 ├── transport/
 │   └── transport.ts        # fetch(keepalive) + sendBeacon 전송
 ├── core/
