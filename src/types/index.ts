@@ -61,6 +61,8 @@ export type EventPayload =
 export interface SDKEvent {
   type: EventType;
   timestamp: number;
+  // 발생 요소의 CSS selector. start/scroll/visibility처럼 특정 요소가 없는 글로벌 이벤트는 생략.
+  cssSelector?: string;
   payload: EventPayload;
 }
 
