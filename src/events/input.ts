@@ -1,6 +1,7 @@
 import type { Collector } from '../core/sdk';
 import { getQueue } from '../core/context';
 import { getElementId } from '../utils/dom';
+import { buildCssSelector } from '../utils/selector';
 import { touchSession } from '../utils/session';
 
 /** input 이벤트 대상 태그 */
@@ -20,6 +21,7 @@ export function createInputCollector(): Collector {
     getQueue().push({
       type: 'input',
       timestamp: Date.now(),
+      cssSelector: buildCssSelector(target),
       payload: { fieldId: getElementId(target) },
     });
   }

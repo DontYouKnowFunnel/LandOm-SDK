@@ -1,6 +1,7 @@
 import type { Collector } from '../core/sdk';
 import { getQueue } from '../core/context';
 import { getElementId } from '../utils/dom';
+import { buildCssSelector } from '../utils/selector';
 
 /**
  * 이탈(exit) 이벤트 수집기
@@ -39,6 +40,7 @@ export function createExitCollector(): Collector {
     queue.push({
       type: 'exit',
       timestamp: Date.now(),
+      cssSelector: lastEl ? buildCssSelector(lastEl) : null,
       payload: { lastElementId, maxDepth },
     });
 

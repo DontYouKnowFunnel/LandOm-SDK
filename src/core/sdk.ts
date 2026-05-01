@@ -99,6 +99,7 @@ export function capture(type: EventType, payload: EventPayload = {}): void {
   const event: SDKEvent = {
     type,
     timestamp: Date.now(),
+    cssSelector: null,
     payload,
   };
 

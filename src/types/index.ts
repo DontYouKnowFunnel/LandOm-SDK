@@ -61,6 +61,8 @@ export type EventPayload =
 export interface SDKEvent {
   type: EventType;
   timestamp: number;
+  // 발생 요소의 CSS selector. 연결된 요소가 없는 이벤트는 null.
+  cssSelector: string | null;
   payload: EventPayload;
 }
 

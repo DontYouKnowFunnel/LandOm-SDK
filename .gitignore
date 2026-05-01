@@ -4,6 +4,8 @@ dist/
 
 # 개발용 파일 (원격 제외)
 test.html
+test-*.mjs
+slide-capture.html
 mock-server.*
 CLAUDE.md
 TODOS.md

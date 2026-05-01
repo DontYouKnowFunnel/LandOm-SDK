@@ -11,6 +11,7 @@ export function createStartCollector(): Collector {
       getQueue().push({
         type: 'start',
         timestamp: Date.now(),
+        cssSelector: null,
         payload: {},
       });
     },
