@@ -10,6 +10,7 @@ export type {
   ScrollPayload,
   ClickPayload,
   InputPayload,
+  ReplayPayload,
   PingPayload,
   ExitPayload,
   CustomPayload,

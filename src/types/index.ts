@@ -6,6 +6,7 @@ export type EventType =
   | 'scroll'
   | 'click'
   | 'input'
+  | 'replay'
   | 'ping'
   | 'exit'
   | 'custom';
@@ -33,6 +34,20 @@ export interface InputPayload {
   fieldId: string;
 }
 
+export interface ReplayPayload {
+  event: unknown;
+  isCheckout: boolean;
+  version: 'rrweb';
+}
+
+export interface CompressedReplayPayload {
+  compressed: true;
+  compression: 'gzip';
+  encoding: 'base64';
+  data: string;
+  version: 'rrweb';
+}
+
 export interface PingPayload {
   sectionId: string;
 }
@@ -52,6 +67,8 @@ export type EventPayload =
   | ScrollPayload
   | ClickPayload
   | InputPayload
+  | ReplayPayload
+  | CompressedReplayPayload
   | PingPayload
   | ExitPayload
   | CustomPayload;
@@ -84,6 +101,16 @@ export interface SDKConfig {
   flushQueueSize: number;
   maxQueueSize: number;
   maxRetries: number;
+  replayMaskAllInputs: boolean;
+  replayBlockClass: string;
+  replayBlockSelector?: string;
+  replayMaskTextClass: string;
+  replayMaskTextSelector?: string;
+  replayCheckoutEveryNms: number;
+  replayMousemoveSampling: number | false;
+  replayMousemoveCallbackSampling: number;
+  replayScrollSampling: number;
+  replayInputSampling: 'all' | 'last';
   beforeSend?: (event: SDKEvent) => SDKEvent | null;
   debug: boolean;
 }
@@ -98,5 +125,14 @@ export const DEFAULT_CONFIG: Omit<SDKConfig, 'apiKey'> = {
   flushQueueSize: 20,
   maxQueueSize: 100,
   maxRetries: 3,
+  replayMaskAllInputs: true,
+  replayBlockClass: 'rr-block',
+  replayBlockSelector: '.no-record',
+  replayMaskTextClass: 'rr-mask',
+  replayCheckoutEveryNms: 600_000,
+  replayMousemoveSampling: false,
+  replayMousemoveCallbackSampling: 500,
+  replayScrollSampling: 200,
+  replayInputSampling: 'last',
   debug: false,
 };

@@ -53,10 +53,35 @@ LandOm.init({
   flushInterval: 3000,          // 자동 전송 간격 ms (기본값)
   flushQueueSize: 20,           // 큐 크기 도달 시 즉시 전송 (기본값)
   maxQueueSize: 100,            // 최대 큐 크기, 초과 시 오래된 이벤트 드롭 (기본값)
+  replayMaskAllInputs: true,    // input 값 마스킹 여부 (기본값)
+  replayBlockClass: 'rr-block', // 녹화에서 제외할 요소 클래스
+  replayBlockSelector: '.no-record', // 녹화에서 제외할 요소 선택자
+  replayMaskTextClass: 'rr-mask', // 텍스트를 마스킹할 요소 클래스
+  replayCheckoutEveryNms: 600000, // rrweb full snapshot 재생성 간격 ms (기본값: 10분)
+  replayMousemoveSampling: false, // mousemove 기록 여부/간격 (기본값: 비활성화)
+  replayMousemoveCallbackSampling: 500, // mousemove emit 간격 ms (기본값)
+  replayScrollSampling: 200,      // scroll 샘플링 간격 ms (기본값)
+  replayInputSampling: 'last',    // input 기록 빈도 (기본값: change 중심)
   debug: false,                 // 콘솔 디버그 로그 (기본값)
   beforeSend: (event) => event, // 전송 전 이벤트 가공/필터링 훅
 });
 ```
+
+### 세션 리플레이
+
+rrweb 기반 세션 리플레이는 `init()` 호출 후 자동으로 수집됩니다.
+
+```js
+LandOm.init({
+  apiKey: 'your-project-key',
+  endpoint: 'http://your-server.com/api/v1/events',
+});
+```
+
+리플레이 수집 시 `type: "replay"` 이벤트가 전송되며, rrweb payload는 pako로 Gzip 압축 후 Base64 문자열로 전송됩니다.
+서버는 저장 전에 압축을 해제해서 기존 `event_details.payload`에 원래 JSON 구조를 저장합니다.
+민감 영역은 HTML에 `rr-block` 또는 `no-record` 클래스를 붙이면 녹화에서 제외되고, `rr-mask` 클래스를 붙이면 텍스트가 마스킹됩니다.
+SDK는 `slimDOMOptions: "all"`과 `inlineStylesheet: false`를 적용해 script/comment/head metadata와 인라인 스타일시트 기록량을 줄입니다.
 
 ## 자동 수집 이벤트
 
@@ -69,6 +94,7 @@ SDK가 `init()` 후 자동으로 수집하는 이벤트:
 | `scroll` | 스크롤 (500ms 쓰로틀) | `yOffset`, `percentage` |
 | `click` | element 클릭 | `targetId` |
 | `input` | 입력 필드 포커스 (값 미수집) | `fieldId` |
+| `replay` | rrweb 세션 리플레이 | `compressed`, `compression`, `encoding`, `data`, `version` |
 | `ping` | 현재 보고 있는 섹션 (5초 간격) | `sectionId` |
 | `exit` | 페이지 이탈 | `lastElementId`, `maxDepth` |
 
@@ -118,6 +144,7 @@ src/
     ├── scroll.ts           # 스크롤 깊이 추적
     ├── click.ts            # 클릭 이벤트
     ├── input.ts            # 입력 필드 포커스 감지
+    ├── replay.ts           # rrweb 세션 리플레이 수집
     ├── ping.ts             # 체류 섹션 보고 (IntersectionObserver)
     └── exit.ts             # 이탈 감지 + 동기 flush
 ```
