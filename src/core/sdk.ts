@@ -9,6 +9,7 @@ import { createVisibilityCollector } from '../events/visibility';
 import { createScrollCollector } from '../events/scroll';
 import { createClickCollector } from '../events/click';
 import { createInputCollector } from '../events/input';
+import { createReplayCollector } from '../events/replay';
 import { createPingCollector } from '../events/ping';
 import { createExitCollector } from '../events/exit';
 import type { Logger } from '../utils/logger';
@@ -69,6 +70,7 @@ export function init(options: SDKOptions): void {
     createScrollCollector(),
     createClickCollector(),
     createInputCollector(),
+    createReplayCollector(),
     createPingCollector(),
     createExitCollector(),
   ]);
