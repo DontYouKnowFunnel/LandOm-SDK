@@ -101,6 +101,7 @@ export interface SDKConfig {
   flushQueueSize: number;
   maxQueueSize: number;
   maxRetries: number;
+  enableReplay: boolean;
   replayMaskAllInputs: boolean;
   replayBlockClass: string;
   replayBlockSelector?: string;
@@ -125,6 +126,7 @@ export const DEFAULT_CONFIG: Omit<SDKConfig, 'apiKey'> = {
   flushQueueSize: 20,
   maxQueueSize: 100,
   maxRetries: 3,
+  enableReplay: true,
   replayMaskAllInputs: true,
   replayBlockClass: 'rr-block',
   replayBlockSelector: '.no-record',
