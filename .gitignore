@@ -7,6 +7,8 @@ test.html
 test-*.mjs
 slide-capture.html
 mock-server.*
+replay-player.html
+.captures/
 CLAUDE.md
 TODOS.md
 .claude/
