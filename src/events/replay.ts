@@ -1,4 +1,5 @@
 import { record } from 'rrweb';
+import type { eventWithTime } from '@rrweb/types';
 import { gzip } from 'pako';
 import type { Collector } from '../core/sdk';
 import { getConfig, getLogger, getQueue } from '../core/context';
@@ -16,7 +17,7 @@ function uint8ArrayToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function createReplayPayload(event: unknown, isCheckout: boolean): EventPayload {
+function createReplayPayload(event: eventWithTime, isCheckout: boolean): EventPayload {
   const rawPayload: ReplayPayload = {
     event,
     isCheckout,
@@ -61,7 +62,7 @@ export function createReplayCollector(): Collector {
 
           const replayEvent: SDKEvent = {
             type: 'replay',
-            timestamp: event.timestamp || Date.now(),
+            timestamp: event.timestamp ?? Date.now(),
             cssSelector: null,
             payload,
           };
