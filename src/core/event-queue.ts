@@ -45,6 +45,37 @@ export function createEventQueue(config: EventQueueConfig) {
     };
   }
 
+  /**
+   * maxQueueSize 초과 시 큐 정리.
+   * 분석 핵심 이벤트(click, exit 등)를 보존하기 위해 오래된 replay 이벤트를 먼저 드롭한다.
+   * 그래도 초과면 가장 오래된 이벤트부터 드롭한다.
+   */
+  function enforceMaxSize(): void {
+    if (queue.length <= maxQueueSize) return;
+
+    let need = queue.length - maxQueueSize;
+    let droppedReplay = 0;
+    const survivors: SDKEvent[] = [];
+
+    for (const e of queue) {
+      if (need > 0 && e.type === 'replay') {
+        need--;
+        droppedReplay++;
+        continue;
+      }
+      survivors.push(e);
+    }
+
+    let droppedOther = 0;
+    if (need > 0) {
+      droppedOther = Math.min(need, survivors.length);
+      survivors.splice(0, droppedOther);
+    }
+
+    queue = survivors;
+    logger.warn(`큐 초과: replay ${droppedReplay}건, 기타 ${droppedOther}건 드롭`);
+  }
+
   /** 이벤트 추가 (beforeSend 적용, maxQueueSize 초과 시 드롭) */
   function push(event: SDKEvent): void {
     // beforeSend 훅 적용
@@ -55,13 +86,7 @@ export function createEventQueue(config: EventQueueConfig) {
     }
 
     queue.push(processed);
-
-    // maxQueueSize 초과 시 오래된 이벤트 드롭
-    if (queue.length > maxQueueSize) {
-      const dropped = queue.length - maxQueueSize;
-      queue = queue.slice(dropped);
-      logger.warn(`큐 초과로 ${dropped}건 드롭`);
-    }
+    enforceMaxSize();
 
     // flushQueueSize 도달 시 즉시 flush
     if (queue.length >= flushQueueSize) {
@@ -86,12 +111,7 @@ export function createEventQueue(config: EventQueueConfig) {
     const ok = await transport.send(payload);
     if (!ok) {
       queue.unshift(...events);
-      // 복원 후 maxQueueSize 초과 시 오래된 이벤트 드롭
-      if (queue.length > maxQueueSize) {
-        const dropped = queue.length - maxQueueSize;
-        queue = queue.slice(dropped);
-        logger.warn(`복원 후 큐 초과로 ${dropped}건 드롭`);
-      }
+      enforceMaxSize();
     }
   }
 
