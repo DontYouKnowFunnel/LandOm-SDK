@@ -1,4 +1,4 @@
-import type { TransportPayload } from '../types';
+import type { SDKEvent, TransportPayload } from '../types';
 import type { Logger } from '../utils/logger';
 
 /** Transport 생성에 필요한 설정 */
@@ -91,22 +91,70 @@ export function createTransport(config: TransportConfig) {
     return false;
   }
 
+  /** sendBeacon 안전 한계 (64KB, 여유분 확보) */
+  const SENDBEACON_LIMIT = 60_000;
+
+  /** 청크별로 직렬화한 body 크기가 한계 이하가 되도록 events를 분할 */
+  function chunkEvents(payload: TransportPayload, limit: number): SDKEvent[][] {
+    const envelopeSize = JSON.stringify({
+      ...payload,
+      apiKey,
+      events: [],
+    }).length;
+    const budget = limit - envelopeSize - 8; // ',' 및 안전 여분
+
+    const chunks: SDKEvent[][] = [];
+    let current: SDKEvent[] = [];
+    let currentSize = 0;
+
+    for (const ev of payload.events) {
+      const evSize = JSON.stringify(ev).length + 1; // 구분자 1바이트
+      if (current.length > 0 && currentSize + evSize > budget) {
+        chunks.push(current);
+        current = [];
+        currentSize = 0;
+      }
+      current.push(ev);
+      currentSize += evSize;
+    }
+    if (current.length > 0) chunks.push(current);
+
+    return chunks;
+  }
+
   /**
-   * navigator.sendBeacon으로 동기 전송
-   * 페이지 이탈(beforeunload, visibilitychange) 시 사용
-   * 헤더 설정 불가 → body에 apiKey 포함
+   * navigator.sendBeacon으로 동기 전송 (페이지 이탈 시 사용).
+   * 헤더 설정 불가 → body에 apiKey 포함.
+   * 64KB 한계를 넘기지 않도록 events를 청크로 분할해 다회 호출.
+   * 페이지 이탈 컨텍스트라 fetch fallback은 의미 없음 (요청이 unload와 함께 취소됨).
+   * sendBeacon 실패 청크는 드롭하고 경고만 남긴다.
    */
   function sendSync(payload: TransportPayload): void {
-    const body = JSON.stringify({ ...payload, apiKey });
-    const blob = new Blob([body], { type: 'application/json' });
-    const ok = navigator.sendBeacon(endpoint, blob);
+    const chunks = chunkEvents(payload, SENDBEACON_LIMIT);
 
-    if (ok) {
-      logger.log('sendBeacon 전송:', payload.events.length, '건');
-    } else {
-      logger.warn('sendBeacon 실패, fetch fallback 시도');
-      // sendBeacon 실패 시 fetch로 재시도
-      send(payload);
+    for (const events of chunks) {
+      const body = JSON.stringify({ ...payload, apiKey, events });
+
+      if (body.length > SENDBEACON_LIMIT) {
+        // 단일 이벤트가 청크 한계를 넘는 케이스 (예: 거대한 replay 페이로드)
+        logger.warn(
+          'sendSync: 단일 청크가 sendBeacon 한계 초과, 드롭:',
+          body.length,
+          'bytes,',
+          events.length,
+          '건',
+        );
+        continue;
+      }
+
+      const blob = new Blob([body], { type: 'application/json' });
+      const ok = navigator.sendBeacon(endpoint, blob);
+
+      if (ok) {
+        logger.log('sendBeacon 전송:', events.length, '건');
+      } else {
+        logger.warn('sendBeacon 실패, 청크 드롭:', events.length, '건');
+      }
     }
   }
 
