@@ -64,16 +64,19 @@ export function init(options: SDKOptions): void {
   isInitialized = true;
 
   // 기본 이벤트 수집기 등록
-  registerCollectors([
+  const builtins: Collector[] = [
     createStartCollector(),
     createVisibilityCollector(),
     createScrollCollector(),
     createClickCollector(),
     createInputCollector(),
-    createReplayCollector(),
     createPingCollector(),
     createExitCollector(),
-  ]);
+  ];
+  if (config.enableReplay) {
+    builtins.splice(5, 0, createReplayCollector());
+  }
+  registerCollectors(builtins);
 
   logger.log('SDK 초기화 완료', config);
 }
