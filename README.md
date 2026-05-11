@@ -55,10 +55,12 @@ LandOm.init({
   maxQueueSize: 100,                   // 최대 큐 크기, 초과 시 오래된 이벤트 드롭 (기본값)
   maxRetries: 3,                       // fetch 전송 실패 재시도 횟수 (기본값)
 
+  enableReplay: true,                  // 세션 리플레이 수집 활성화 (기본값)
   replayMaskAllInputs: true,           // rrweb input 값 마스킹 여부 (기본값)
   replayBlockClass: 'rr-block',        // 녹화에서 제외할 요소 클래스
   replayBlockSelector: '.no-record',   // 녹화에서 제외할 요소 선택자
   replayMaskTextClass: 'rr-mask',      // 텍스트를 마스킹할 요소 클래스
+  replayInlineStylesheet: true,        // 외부 stylesheet 인라인 (재생 가능성 ↔ 페이로드 크기 트레이드오프)
   replayCheckoutEveryNms: 600000,      // rrweb full snapshot 재생성 간격 ms (기본값: 10분)
   replayMousemoveSampling: false,      // mousemove 기록 여부/간격 (기본값: 비활성화)
   replayMousemoveCallbackSampling: 500,// mousemove emit 간격 ms (mousemove 활성화 시)
@@ -72,7 +74,7 @@ LandOm.init({
 
 ## 세션 리플레이
 
-rrweb 기반 세션 리플레이는 `init()` 호출 후 자동으로 수집됩니다. 별도 on/off 옵션은 없습니다.
+rrweb 기반 세션 리플레이는 `init()` 호출 후 기본적으로 자동 수집되며, `enableReplay: false`로 끌 수 있습니다.
 
 리플레이 수집 시 `type: "replay"` 이벤트가 전송되며, rrweb payload는 `pako`로 Gzip 압축 후 Base64 문자열로 전송됩니다.
 
@@ -100,7 +102,6 @@ SDK는 rrweb 기록량을 줄이기 위해 다음 설정을 기본 적용합니�
 | 설정 | 값 | 설명 |
 |------|----|------|
 | `slimDOMOptions` | `"all"` | script, comment, head metadata 등 불필요한 DOM 기록 최소화 |
-| `inlineStylesheet` | `false` | 거대한 stylesheet 내용이 DOM snapshot에 인라인으로 반복 기록되는 것을 방지 |
 | `sampling.mousemove` | `false` | 마우스 이동 기록 비활성화 |
 | `sampling.scroll` | `200` | rrweb 기본 100ms 대비 스크롤 기록 빈도 축소 |
 | `sampling.input` | `"last"` | 입력 이벤트를 change 중심으로 기록 |
