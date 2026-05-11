@@ -107,6 +107,7 @@ export interface SDKConfig {
   replayBlockSelector?: string;
   replayMaskTextClass: string;
   replayMaskTextSelector?: string;
+  replayInlineStylesheet: boolean;
   replayCheckoutEveryNms: number;
   replayMousemoveSampling: number | false;
   replayMousemoveCallbackSampling: number;
@@ -131,6 +132,8 @@ export const DEFAULT_CONFIG: Omit<SDKConfig, 'apiKey'> = {
   replayBlockClass: 'rr-block',
   replayBlockSelector: '.no-record',
   replayMaskTextClass: 'rr-mask',
+  // cross-origin stylesheet도 재생 가능하도록 인라인 (페이로드 ↑ 트레이드오프)
+  replayInlineStylesheet: true,
   replayCheckoutEveryNms: 600_000,
   replayMousemoveSampling: false,
   replayMousemoveCallbackSampling: 500,

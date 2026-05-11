@@ -74,7 +74,7 @@ export function createReplayCollector(): Collector {
         maskTextClass: config.replayMaskTextClass,
         maskTextSelector: config.replayMaskTextSelector,
         slimDOMOptions: 'all',
-        inlineStylesheet: false,
+        inlineStylesheet: config.replayInlineStylesheet,
         checkoutEveryNms: config.replayCheckoutEveryNms,
         sampling: {
           mousemove: config.replayMousemoveSampling,
