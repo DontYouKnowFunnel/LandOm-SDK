@@ -53,12 +53,10 @@ export function createReplayCollector(): Collector {
           try {
             payload = createReplayPayload(event, Boolean(isCheckout));
           } catch (err) {
-            logger.warn('rrweb payload 압축 실패, 비압축으로 전송:', err);
-            payload = {
-              event,
-              isCheckout: Boolean(isCheckout),
-              version: 'rrweb',
-            };
+            // 서버는 압축된 페이로드 컨트랙트만 처리한다.
+            // 비압축 fallback을 보내면 컨트랙트가 깨지므로 이 이벤트는 드롭한다.
+            logger.warn('rrweb payload 압축 실패, 이벤트 드롭:', err);
+            return;
           }
 
           const replayEvent: SDKEvent = {
