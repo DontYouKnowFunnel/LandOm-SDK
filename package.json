@@ -47,7 +47,6 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "pako": "^2.1.0",
     "rrweb": "^2.0.0-alpha.4"
   }
 }
