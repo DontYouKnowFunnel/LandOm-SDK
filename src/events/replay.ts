@@ -1,6 +1,5 @@
 import { record } from 'rrweb';
 import type { eventWithTime } from '@rrweb/types';
-import { gzip } from 'pako';
 import type { Collector } from '../core/sdk';
 import { getConfig, getLogger, getQueue } from '../core/context';
 import type { EventPayload, ReplayPayload, SDKEvent } from '../types';
@@ -17,14 +16,23 @@ function uint8ArrayToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function createReplayPayload(event: eventWithTime, isCheckout: boolean): EventPayload {
+async function gzipString(input: string): Promise<Uint8Array> {
+  const stream = new Blob([input]).stream().pipeThrough(new CompressionStream('gzip'));
+  const buffer = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buffer);
+}
+
+async function createReplayPayload(
+  event: eventWithTime,
+  isCheckout: boolean,
+): Promise<EventPayload> {
   const rawPayload: ReplayPayload = {
     event,
     isCheckout,
     version: 'rrweb',
   };
 
-  const compressed = gzip(JSON.stringify(rawPayload));
+  const compressed = await gzipString(JSON.stringify(rawPayload));
 
   return {
     compressed: true,
@@ -49,25 +57,21 @@ export function createReplayCollector(): Collector {
 
       stopRecording = record({
         emit(event, isCheckout) {
-          let payload: EventPayload;
-
-          try {
-            payload = createReplayPayload(event, Boolean(isCheckout));
-          } catch (err) {
-            // 서버는 압축된 페이로드 컨트랙트만 처리한다.
-            // 비압축 fallback을 보내면 컨트랙트가 깨지므로 이 이벤트는 드롭한다.
-            logger.warn('rrweb payload 압축 실패, 이벤트 드롭:', err);
-            return;
-          }
-
-          const replayEvent: SDKEvent = {
-            type: 'replay',
-            timestamp: event.timestamp ?? Date.now(),
-            cssSelector: null,
-            payload,
-          };
-
-          getQueue().push(replayEvent);
+          createReplayPayload(event, Boolean(isCheckout))
+            .then((payload) => {
+              const replayEvent: SDKEvent = {
+                type: 'replay',
+                timestamp: event.timestamp ?? Date.now(),
+                cssSelector: null,
+                payload,
+              };
+              getQueue().push(replayEvent);
+            })
+            .catch((err) => {
+              // 서버는 압축된 페이로드 컨트랙트만 처리한다.
+              // 비압축 fallback을 보내면 컨트랙트가 깨지므로 이 이벤트는 드롭한다.
+              logger.warn('rrweb payload 압축 실패, 이벤트 드롭:', err);
+            });
         },
         maskAllInputs: config.replayMaskAllInputs,
         blockClass: config.replayBlockClass,

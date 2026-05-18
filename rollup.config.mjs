@@ -12,7 +12,7 @@ export default [
       format: 'esm',
       sourcemap: true,
     },
-    plugins: [resolve(), esbuild({ target: 'es2018' })],
+    plugins: [resolve(), esbuild({ target: 'es2018', minify: true })],
   },
   // CJS
   {
@@ -23,7 +23,7 @@ export default [
       sourcemap: true,
       exports: 'named',
     },
-    plugins: [resolve(), esbuild({ target: 'es2018' })],
+    plugins: [resolve(), esbuild({ target: 'es2018', minify: true })],
   },
   // UMD
   {
@@ -35,6 +35,6 @@ export default [
       sourcemap: true,
       exports: 'named',
     },
-    plugins: [resolve(), esbuild({ target: 'es2018' })],
+    plugins: [resolve(), esbuild({ target: 'es2018', minify: true })],
   },
 ];
