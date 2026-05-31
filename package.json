@@ -1,6 +1,6 @@
 {
   "name": "landom-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Lightweight SDK that auto-captures landing page user behavior (clicks, scrolls, inputs, exits, rrweb session replay) and ships it to your analytics backend.",
   "main": "dist/landom-sdk.cjs.js",
   "module": "dist/landom-sdk.esm.js",
