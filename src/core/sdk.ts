@@ -12,6 +12,7 @@ import { createInputCollector } from '../events/input';
 import { createReplayCollector } from '../events/replay';
 import { createPingCollector } from '../events/ping';
 import { createExitCollector } from '../events/exit';
+import { createOverlayController } from '../overlay/overlay';
 import type { Logger } from '../utils/logger';
 import type { EventQueue } from './event-queue';
 
@@ -26,6 +27,7 @@ let isInitialized = false;
 let logger: Logger;
 let queue: EventQueue;
 let collectors: Collector[] = [];
+let overlayController: Collector | null = null;
 
 /**
  * SDK 초기화
@@ -78,6 +80,12 @@ export function init(options: SDKOptions): void {
   }
   registerCollectors(builtins);
 
+  if (config.overlay?.enabled) {
+    overlayController = createOverlayController();
+    overlayController.setup();
+    logger.log('overlay 컨트롤러 활성화');
+  }
+
   logger.log('SDK 초기화 완료', config);
 }
 
@@ -121,6 +129,10 @@ export function destroy(): void {
 
   collectors.forEach((c) => c.teardown());
   collectors = [];
+  if (overlayController) {
+    overlayController.teardown();
+    overlayController = null;
+  }
   queue.stop();
   isInitialized = false;
   logger.log('SDK 종료');

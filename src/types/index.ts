@@ -92,6 +92,35 @@ export interface TransportPayload {
   events: SDKEvent[];
 }
 
+// ─── Overlay (퍼널 오버레이) ───
+
+export type SectionName =
+  | 'HERO' | 'PROBLEM' | 'TARGET' | 'USE_CASE' | 'FEATURE'
+  | 'VALUE_PROP' | 'SOCIAL_PROOF' | 'TRUST' | 'PRICING' | 'FAQ'
+  | 'CTA' | 'CTA_SECTION' | 'INPUT_FORM' | 'CHECKOUT'
+  | 'INTERACTIVE' | 'POPUP' | 'GENERIC';
+
+export interface OverlayConfig {
+  enabled: boolean;
+}
+
+export interface LandomOverlayItem {
+  sectionName: SectionName;
+  selector: string;
+  dropRate: number; // 0.0 ~ 1.0
+}
+
+export interface LandomOverlayResultItem {
+  sectionName: SectionName;
+  selector: string;
+}
+
+export interface OverlayResult {
+  matched: LandomOverlayResultItem[];
+  missing: LandomOverlayResultItem[];
+  invalid: LandomOverlayResultItem[];
+}
+
 // ─── SDK 설정 ───
 
 export interface SDKConfig {
@@ -113,6 +142,8 @@ export interface SDKConfig {
   replayMousemoveCallbackSampling: number;
   replayScrollSampling: number;
   replayInputSampling: 'all' | 'last';
+  projectId?: number;
+  overlay?: OverlayConfig;
   beforeSend?: (event: SDKEvent) => SDKEvent | null;
   debug: boolean;
 }
