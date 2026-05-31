@@ -18,4 +18,9 @@ export type {
   TransportPayload,
   SDKConfig,
   SDKOptions,
+  SectionName,
+  OverlayConfig,
+  LandomOverlayItem,
+  LandomOverlayResultItem,
+  OverlayResult,
 } from './types';
