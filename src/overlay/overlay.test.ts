@@ -113,3 +113,23 @@ test('teardown은 root/style을 제거하고 메시지 수신을 멈춘다', () 
   send({ type: 'LANDOM_OVERLAY_SET', items: [] });
   expect(postSpy).not.toHaveBeenCalled();
 });
+
+test('렌더 중에는 MutationObserver를 끊었다가 다시 연결한다(자기 트리거 루프 차단)', () => {
+  const disconnectSpy = jest.spyOn(MutationObserver.prototype, 'disconnect');
+  const observeSpy = jest.spyOn(MutationObserver.prototype, 'observe');
+
+  const c = createOverlayController();
+  c.setup();
+  disconnectSpy.mockClear();
+  observeSpy.mockClear();
+
+  send({ type: 'LANDOM_OVERLAY_SET', items: [] });
+
+  // render() 안에서 disconnect 후 observe로 재무장됐는지 확인
+  expect(disconnectSpy).toHaveBeenCalled();
+  expect(observeSpy).toHaveBeenCalled();
+
+  c.teardown();
+  disconnectSpy.mockRestore();
+  observeSpy.mockRestore();
+});
